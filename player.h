@@ -5,6 +5,7 @@
 #include <QtMultimedia>
 #include <QtMultimediaWidgets>
 #include <QMediaPlayer>
+#include "RangeSlider.h"
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -32,6 +33,7 @@ private slots:
     void metaDataChanged();
 
     void seek(int seconds);
+    void test(int low, int high);
     //void jump(const QModelIndex& index);
 
     void statusChanged(QMediaPlayer::MediaStatus status);
@@ -48,6 +50,7 @@ private:
     QMediaPlayer* mPlayer = nullptr;
     QLabel* mCoverLabel = nullptr;
     QSlider* mSlider = nullptr;
+    RangeSlider* mBreakSlider = nullptr;
     QLabel* mLabelDuration = nullptr;
     QLabel* mStatusLabel = nullptr;
     QStatusBar* mStatusBar = nullptr;

@@ -1,5 +1,6 @@
 #include "player.h"
 #include "PlayerControls.h"
+#include "RangeSlider.h"
 
 #include <QtWidgets>
 #include <QMediaPlayer>
@@ -24,6 +25,16 @@ Player::Player(QWidget* parent): QWidget(parent) {
 
     mSlider = new QSlider(Qt::Horizontal, this);
     mSlider->setRange(0, mPlayer->duration() / 1000);
+
+    //add custom slider
+    mBreakSlider = new RangeSlider(Qt::Horizontal);
+    mBreakSlider->setMinimumHeight(30);
+    mBreakSlider->setRange(0, 10);
+    mBreakSlider->setLow(0);
+    mBreakSlider->setHigh(10);
+    mBreakSlider->setTickPosition(QSlider::TicksBelow);
+    connect(mBreakSlider, &RangeSlider::sliderMoved, this, &Player::test);
+
 
     mLabelDuration = new QLabel(this);
     connect(mSlider, &QSlider::sliderMoved, this, &Player::seek);
@@ -61,6 +72,11 @@ Player::Player(QWidget* parent): QWidget(parent) {
     hLayout->addWidget(mSlider);
     hLayout->addWidget(mLabelDuration);
     layout->addLayout(hLayout);
+
+    QHBoxLayout* breakLayout = new QHBoxLayout;
+    breakLayout->addWidget(mBreakSlider);
+    layout->addLayout(breakLayout);
+
     layout->addLayout(controlsLayout);
     //didn't include display layout
 
@@ -97,13 +113,28 @@ void Player::open() {
     fileDialog.setAcceptMode(QFileDialog::AcceptOpen);
     fileDialog.setWindowTitle(tr("Open Files"));
     fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MusicLocation).value(0, QDir::homePath()));
-    if (fileDialog.exec() == QDialog::Accepted)
+    if (fileDialog.exec() == QDialog::Accepted) {
         mTracks = fileDialog.selectedUrls(); //Save Track as URL Name
+
+//        qDebug() << "Tracks Selected";
+//        for(auto track: mTracks) {
+//            qDebug() << track;
+//        }
+        if (!mTracks.isEmpty()) {
+            QUrl localTrack = mTracks[0];
+            qDebug() << "Track Selected: " << localTrack;
+            mPlayer->setSource(localTrack);
+            mAudio->setVolume(50);
+        }
+    }
 }
 
 void Player::durationChanged(qint64 duration) {
     mDuration = duration / 1000;
     mSlider->setMaximum(mDuration);
+
+    //update break slider here
+    mBreakSlider->setMaximum(mDuration);
 }
 
 void Player::positionChanged(qint64 progress) {
@@ -133,6 +164,10 @@ void Player::metaDataChanged() {
 
 void Player::seek(int seconds) {
     mPlayer->setPosition(seconds * 1000);
+}
+
+void Player::test(int low, int high) {
+    qDebug() << "Slider moved: " << low << ", " << high;
 }
 
 void Player::statusChanged(QMediaPlayer::MediaStatus status) {

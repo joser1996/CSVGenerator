@@ -11,12 +11,14 @@ CONFIG += c++11
 
 SOURCES += \
     PlayerControls.cpp \
+    RangeSlider.cpp \
     main.cpp \
     mainwindow.cpp \
     player.cpp
 
 HEADERS += \
     PlayerControls.h \
+    RangeSlider.h \
     mainwindow.h \
     player.h
 

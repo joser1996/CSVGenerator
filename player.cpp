@@ -1,5 +1,6 @@
 #include "player.h"
 #include "PlayerControls.h"
+#include "RangeControls.h"
 #include "RangeSlider.h"
 
 #include <QtWidgets>
@@ -20,24 +21,24 @@ Player::Player(QWidget* parent): QWidget(parent) {
     connect(mPlayer, &QMediaPlayer::playbackStateChanged, this, &Player::stateChanged);
     connect(mPlayer, &QMediaPlayer::bufferProgressChanged, this, &Player::bufferingProgress);
     connect(mPlayer, &QMediaPlayer::errorChanged, this, &Player::displayErrorMessage);
-    //open
-    //jump
+
 
     mSlider = new QSlider(Qt::Horizontal, this);
     mSlider->setRange(0, mPlayer->duration() / 1000);
 
-    //add custom slider
+    //Custom RangeSlider
     mBreakSlider = new RangeSlider(Qt::Horizontal);
     mBreakSlider->setMinimumHeight(30);
-    mBreakSlider->setRange(0, 10);
+    mBreakSlider->setRange(0, 0);
     mBreakSlider->setLow(0);
-    mBreakSlider->setHigh(10);
+    mBreakSlider->setHigh(0);
     mBreakSlider->setTickPosition(QSlider::TicksBelow);
-    connect(mBreakSlider, &RangeSlider::sliderMoved, this, &Player::test);
-
+    connect(mBreakSlider, &RangeSlider::sliderMoved, this, &Player::updateRange);
 
     mLabelDuration = new QLabel(this);
     connect(mSlider, &QSlider::sliderMoved, this, &Player::seek);
+
+    mBreakLabel = new QLabel(this);
 
     //dont' need audio probe for this project
     QPushButton* openButton = new QPushButton(tr("Open"), this);
@@ -51,7 +52,6 @@ Player::Player(QWidget* parent): QWidget(parent) {
     connect(controls, &PlayerControls::play, mPlayer, &QMediaPlayer::play);
     connect(controls, &PlayerControls::pause, mPlayer, &QMediaPlayer::pause);
     connect(controls, &PlayerControls::stop, mPlayer, &QMediaPlayer::stop);
-    //connect(controls, &PlayerControls::next, mPlayer, &QMediaPlayer::stop);
     connect(controls, &PlayerControls::changeVolume, mAudio, &QAudioOutput::setVolume);
     connect(controls, &PlayerControls::changeMuting, mAudio, &QAudioOutput::setMuted);
     connect(controls, &PlayerControls::changeRate, mPlayer, &QMediaPlayer::setPlaybackRate);
@@ -60,23 +60,37 @@ Player::Player(QWidget* parent): QWidget(parent) {
     connect(mAudio, &QAudioOutput::volumeChanged, controls, &PlayerControls::setVolume);
     connect(mAudio, &QAudioOutput::mutedChanged, controls, &PlayerControls::setMuted);
 
+    RangeControls* rangeControls = new RangeControls(this);
+    rangeControls->setState(mPlayer->playbackState());
+    //when pres play should seek to low of rangeSlider; then begin playing
+    connect(rangeControls, &RangeControls::play, mPlayer, &QMediaPlayer::play);
+    connect(rangeControls, &RangeControls::pause, mPlayer, &QMediaPlayer::pause);
+    connect(mPlayer, &QMediaPlayer::playbackStateChanged, rangeControls, &RangeControls::setState);
+
+    QBoxLayout* layout = new QVBoxLayout;
+
     QBoxLayout* controlsLayout = new QHBoxLayout;
     controlsLayout->setContentsMargins(0, 0, 0, 0);
     controlsLayout->addWidget(openButton);
     controlsLayout->addStretch(1);
-    controlsLayout->addWidget(controls);
-    controlsLayout->addStretch(1);
+    //controlsLayout->addWidget(controls);
+    //controlsLayout->addStretch(1);
 
-    QBoxLayout* layout = new QVBoxLayout;
     QHBoxLayout* hLayout = new QHBoxLayout;
-    hLayout->addWidget(mSlider);
+    hLayout->addWidget(controls, 1);
+    hLayout->addWidget(mSlider, 3);
     hLayout->addWidget(mLabelDuration);
-    layout->addLayout(hLayout);
 
     QHBoxLayout* breakLayout = new QHBoxLayout;
+    breakLayout->setContentsMargins(0, 0, 0, 0);
+    breakLayout->addWidget(rangeControls);
+    //breakLayout->addStretch(1);
     breakLayout->addWidget(mBreakSlider);
-    layout->addLayout(breakLayout);
+    //breakLayout->addStretch(1);
+    breakLayout->addWidget(mBreakLabel);
 
+    layout->addLayout(hLayout);
+    layout->addLayout(breakLayout);
     layout->addLayout(controlsLayout);
     //didn't include display layout
 
@@ -115,11 +129,6 @@ void Player::open() {
     fileDialog.setDirectory(QStandardPaths::standardLocations(QStandardPaths::MusicLocation).value(0, QDir::homePath()));
     if (fileDialog.exec() == QDialog::Accepted) {
         mTracks = fileDialog.selectedUrls(); //Save Track as URL Name
-
-//        qDebug() << "Tracks Selected";
-//        for(auto track: mTracks) {
-//            qDebug() << track;
-//        }
         if (!mTracks.isEmpty()) {
             QUrl localTrack = mTracks[0];
             qDebug() << "Track Selected: " << localTrack;
@@ -156,18 +165,21 @@ void Player::metaDataChanged() {
     }
 }
 
-// Previous Clicked method
-
-//jump to track in playlist
-//void Player::jump(const QModelIndex& index)
-//playlist position changed
-
 void Player::seek(int seconds) {
     mPlayer->setPosition(seconds * 1000);
 }
 
-void Player::test(int low, int high) {
+void Player::updateRange(int low, int high) {
     qDebug() << "Slider moved: " << low << ", " << high;
+    QTime lowTime((low / 3600) % 60, (low / 60) % 60,
+                  low % 60, (low * 1000) % 1000);
+    QTime highTime((high / 3600) % 60, (high / 60) % 60,
+                  high % 60, (high * 1000) % 1000);
+    QString format = "mm:ss";
+    if (mDuration > 3600)
+        format = "hh:mm:ss";
+    QString tString = lowTime.toString(format) + " -> " + highTime.toString(format);
+    mBreakLabel->setText(tString);
 }
 
 void Player::statusChanged(QMediaPlayer::MediaStatus status) {
@@ -215,9 +227,9 @@ void Player::handleCursor(QMediaPlayer::MediaStatus status) {
 
 void Player::bufferingProgress(int progress) {
     if (mPlayer->mediaStatus() == QMediaPlayer::StalledMedia)
-        setStatusInfo(tr("Stalled %1%").arg(progress));
+        setStatusInfo(tr("Stalled %1\%").arg(progress));
     else
-        setStatusInfo(tr("Buffering %1%").arg(progress));
+        setStatusInfo(tr("Buffering %1\%").arg(progress));
 }
 
 void Player::setTrackInfo(const QString &info) {

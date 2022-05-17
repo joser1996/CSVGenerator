@@ -33,7 +33,7 @@ private slots:
     void metaDataChanged();
 
     void seek(int seconds);
-    void test(int low, int high);
+    void updateRange(int low, int high);
     //void jump(const QModelIndex& index);
 
     void statusChanged(QMediaPlayer::MediaStatus status);
@@ -49,6 +49,7 @@ private:
 
     QMediaPlayer* mPlayer = nullptr;
     QLabel* mCoverLabel = nullptr;
+    QLabel* mBreakLabel = nullptr;
     QSlider* mSlider = nullptr;
     RangeSlider* mBreakSlider = nullptr;
     QLabel* mLabelDuration = nullptr;

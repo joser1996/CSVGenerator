@@ -35,9 +35,13 @@ void RangeControls::setState(QMediaPlayer::PlaybackState state) {
 }
 
 void RangeControls::playClicked() {
+
+    //aside from emmiting play need to update time on player
+
     switch(mPlayerState) {
     case QMediaPlayer::StoppedState:
     case QMediaPlayer::PausedState:
+        emit updateTime();
         emit play();
         break;
     case QMediaPlayer::PlayingState:

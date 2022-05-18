@@ -34,6 +34,7 @@ Player::Player(QWidget* parent): QWidget(parent) {
     mBreakSlider->setHigh(0);
     mBreakSlider->setTickPosition(QSlider::TicksBelow);
     connect(mBreakSlider, &RangeSlider::sliderMoved, this, &Player::updateRange);
+    connect(mBreakSlider, &RangeSlider::newStart, this, &Player::seek);
 
     mLabelDuration = new QLabel(this);
     connect(mSlider, &QSlider::sliderMoved, this, &Player::seek);
@@ -66,6 +67,7 @@ Player::Player(QWidget* parent): QWidget(parent) {
     connect(rangeControls, &RangeControls::play, mPlayer, &QMediaPlayer::play);
     connect(rangeControls, &RangeControls::pause, mPlayer, &QMediaPlayer::pause);
     connect(mPlayer, &QMediaPlayer::playbackStateChanged, rangeControls, &RangeControls::setState);
+    connect(rangeControls, &RangeControls::updateTime, mBreakSlider, &RangeSlider::updateTime);
 
     QBoxLayout* layout = new QVBoxLayout;
 

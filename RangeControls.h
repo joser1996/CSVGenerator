@@ -19,6 +19,7 @@ public slots:
 signals:
     void play();
     void pause();
+    void updateTime();
 
 private slots:
     void playClicked();

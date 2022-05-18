@@ -26,6 +26,11 @@ void RangeSlider::setHigh(int high) {
     this->highLimit = high;
 }
 
+void RangeSlider::updateTime() {
+    //tell player to seek to lower limit
+    emit newStart(low());
+}
+
 void RangeSlider::paintEvent(QPaintEvent *ev) {
     QPainter painter(this);
     QStyleOptionSlider opt;

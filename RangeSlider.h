@@ -11,9 +11,12 @@ public:
     void setLow(int low);
     int high();
     void setHigh(int high);
+public slots:
+    void updateTime();
 
 signals:
     void sliderMoved(int, int);
+    void newStart(int);
 
 private:
 

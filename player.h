@@ -51,6 +51,9 @@ private:
     void handleCursor(QMediaPlayer::MediaStatus status);
     void updateDurationInfo(qint64 currentInfo);
     QTime getTime(qint64 time);
+    void setupAudioPlayer();
+    void setupViews();
+    void setupControls();
 
     QMediaPlayer* mPlayer = nullptr;
     QLabel* mCoverLabel = nullptr;

@@ -8,18 +8,22 @@
 #include <QMediaPlayer>
 
 Player::Player(QWidget* parent): QWidget(parent) {
+    setupAudioPlayer();
+    setupViews();
+    setupControls();
+    metaDataChanged();
+}
+
+Player::~Player() {}
+
+void Player::setupAudioPlayer() {
     mPlayer = new QMediaPlayer(this);
-    mAudio = new QAudioOutput;
+    mAudio = new QAudioOutput(mPlayer);
+
     mAudioDevice = QAudioDevice();
     mAudio->setDevice(mAudioDevice);
     mPlayer->setAudioOutput(mAudio);
 
-    mTimeSegments << tr("Hello") << tr("Testing");
-    mListView = new QListView(this);
-    mModel = new MyListModel(mTimeSegments, this);
-    mListView->setModel(mModel);
-
-    //set audio role?
     connect(mPlayer, &QMediaPlayer::durationChanged, this, &Player::durationChanged);
     connect(mPlayer, &QMediaPlayer::positionChanged, this, &Player::positionChanged);
     connect(mPlayer, QOverload<>::of(&QMediaPlayer::metaDataChanged), this, &Player::metaDataChanged);
@@ -27,12 +31,18 @@ Player::Player(QWidget* parent): QWidget(parent) {
     connect(mPlayer, &QMediaPlayer::playbackStateChanged, this, &Player::stateChanged);
     connect(mPlayer, &QMediaPlayer::bufferProgressChanged, this, &Player::bufferingProgress);
     connect(mPlayer, &QMediaPlayer::errorChanged, this, &Player::displayErrorMessage);
+}
 
+void Player::setupViews() {
+    mListView = new QListView(this);
+    mModel = new MyListModel(mTimeSegments, this);
+    mListView->setModel(mModel);
+}
 
+void Player::setupControls() {
     mSlider = new QSlider(Qt::Horizontal, this);
     mSlider->setRange(0, mPlayer->duration() / 1000);
 
-    //Custom RangeSlider
     mBreakSlider = new RangeSlider(Qt::Horizontal);
     mBreakSlider->setMinimumHeight(30);
     mBreakSlider->setRange(0, 0);
@@ -44,10 +54,8 @@ Player::Player(QWidget* parent): QWidget(parent) {
 
     mLabelDuration = new QLabel(this);
     connect(mSlider, &QSlider::sliderMoved, this, &Player::seek);
-
     mBreakLabel = new QLabel(this);
 
-    //dont' need audio probe for this project
     QPushButton* openButton = new QPushButton(tr("Open"), this);
     connect(openButton, &QPushButton::clicked, this, &Player::open);
 
@@ -75,8 +83,8 @@ Player::Player(QWidget* parent): QWidget(parent) {
     connect(mPlayer, &QMediaPlayer::playbackStateChanged, rangeControls, &RangeControls::setState);
     connect(rangeControls, &RangeControls::updateTime, mBreakSlider, &RangeSlider::updateTime);
     connect(rangeControls, &RangeControls::saveSegment, this, &Player::saveSegment);
-    QBoxLayout* layout = new QVBoxLayout;
 
+    QBoxLayout* layout = new QVBoxLayout;
     QBoxLayout* controlsLayout = new QHBoxLayout;
     controlsLayout->setContentsMargins(0, 0, 0, 0);
     controlsLayout->addWidget(openButton);
@@ -111,9 +119,7 @@ Player::Player(QWidget* parent): QWidget(parent) {
     layout->addWidget(mStatusBar);
 #endif
 
-
     setLayout(layout);
-
     if (!isPlayerAvailable()) {
         QMessageBox::warning(this, tr("Service not available"),
                              tr("The QMediaPlayer object does not have a valid service.\n"\
@@ -122,10 +128,7 @@ Player::Player(QWidget* parent): QWidget(parent) {
         openButton->setEnabled(false);
     }
 
-    metaDataChanged();
 }
-
-Player::~Player() {}
 
 bool Player::isPlayerAvailable() const {
     return mPlayer->isAvailable();
@@ -148,22 +151,19 @@ void Player::open() {
 }
 
 void Player::saveSegment() {
-    qDebug() << "Player::saveSegment()";
     qint64 lower = mBreakSlider->low();
     qint64 upper = mBreakSlider->high();
     QTime lowTime = getTime(lower);
     QTime upperTime = getTime(upper);
-    //convert to time
-    QString format = "hh:mm:ss";
+    QString newSegment = "%1, %2, %3";
 
-    qDebug() << tr("(%1, %2)").arg(lowTime.toString(format)).arg(upperTime.toString(format));
+    bool ok = false;
+    QString title = QInputDialog::getText(this, tr("Enter Song title: "), tr("Title: "),
+                                          QLineEdit::Normal, "", &ok);
+    if (!ok || title.isEmpty()) return;
 
-    //TimeSegment newSegment(lowTime.toString(format), upperTime.toString(format), "Title");
-    QString newSegment = "title, %1, %2";
-    newSegment = newSegment.arg(lowTime.toString(), upperTime.toString());
+    newSegment = newSegment.arg(title, lowTime.toString(), upperTime.toString());
     mModel->insertRow(newSegment);
-//    mTimeSegments.append(newSegment);
-    qDebug() << "Updated List: " << newSegment;
 }
 
 void Player::durationChanged(qint64 duration) {

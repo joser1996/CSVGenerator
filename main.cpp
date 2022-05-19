@@ -2,8 +2,7 @@
 #include "player.h"
 #include <QApplication>
 
-//TODO: Update Range Controls to have Save Button
-//  - Have A Dialog popup that asks user to enter Title
+
 //TODO: Create TimeRangeView that will have saved ranges
 //  - Make sure ranges don't overlap; and make sure that not a duplicate range
 //

@@ -8,9 +8,14 @@ RangeControls::RangeControls(QWidget* parent): QWidget(parent) {
     mPlayButton->setIcon(style()->standardIcon(QStyle::SP_MediaPlay));
     connect(mPlayButton, &QAbstractButton::clicked, this, &RangeControls::playClicked);
 
+    mSaveButton = new QToolButton(this);
+    mSaveButton->setIcon(style()->standardIcon(QStyle::SP_DialogSaveButton));
+    connect(mSaveButton, &QAbstractButton::clicked, this, &RangeControls::saveClicked);
+
     QBoxLayout* layout = new QHBoxLayout;
     layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(mPlayButton);
+    layout->addWidget(mSaveButton);
     setLayout(layout);
 }
 
@@ -48,4 +53,8 @@ void RangeControls::playClicked() {
         emit pause();
         break;
     }
+}
+
+void RangeControls::saveClicked() {
+    emit saveSegment();
 }

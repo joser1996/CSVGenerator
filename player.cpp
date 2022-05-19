@@ -2,6 +2,7 @@
 #include "PlayerControls.h"
 #include "RangeControls.h"
 #include "RangeSlider.h"
+#include "TimeSegment.h"
 
 #include <QtWidgets>
 #include <QMediaPlayer>
@@ -12,6 +13,11 @@ Player::Player(QWidget* parent): QWidget(parent) {
     mAudioDevice = QAudioDevice();
     mAudio->setDevice(mAudioDevice);
     mPlayer->setAudioOutput(mAudio);
+
+    mTimeSegments << tr("Hello") << tr("Testing");
+    mListView = new QListView(this);
+    mModel = new MyListModel(mTimeSegments, this);
+    mListView->setModel(mModel);
 
     //set audio role?
     connect(mPlayer, &QMediaPlayer::durationChanged, this, &Player::durationChanged);
@@ -68,7 +74,7 @@ Player::Player(QWidget* parent): QWidget(parent) {
     connect(rangeControls, &RangeControls::pause, mPlayer, &QMediaPlayer::pause);
     connect(mPlayer, &QMediaPlayer::playbackStateChanged, rangeControls, &RangeControls::setState);
     connect(rangeControls, &RangeControls::updateTime, mBreakSlider, &RangeSlider::updateTime);
-
+    connect(rangeControls, &RangeControls::saveSegment, this, &Player::saveSegment);
     QBoxLayout* layout = new QVBoxLayout;
 
     QBoxLayout* controlsLayout = new QHBoxLayout;
@@ -94,6 +100,7 @@ Player::Player(QWidget* parent): QWidget(parent) {
     layout->addLayout(hLayout);
     layout->addLayout(breakLayout);
     layout->addLayout(controlsLayout);
+    layout->addWidget(mListView);
     //didn't include display layout
 
 #if defined(Q_OS_QNX)
@@ -140,6 +147,25 @@ void Player::open() {
     }
 }
 
+void Player::saveSegment() {
+    qDebug() << "Player::saveSegment()";
+    qint64 lower = mBreakSlider->low();
+    qint64 upper = mBreakSlider->high();
+    QTime lowTime = getTime(lower);
+    QTime upperTime = getTime(upper);
+    //convert to time
+    QString format = "hh:mm:ss";
+
+    qDebug() << tr("(%1, %2)").arg(lowTime.toString(format)).arg(upperTime.toString(format));
+
+    //TimeSegment newSegment(lowTime.toString(format), upperTime.toString(format), "Title");
+    QString newSegment = "title, %1, %2";
+    newSegment = newSegment.arg(lowTime.toString(), upperTime.toString());
+    mModel->insertRow(newSegment);
+//    mTimeSegments.append(newSegment);
+    qDebug() << "Updated List: " << newSegment;
+}
+
 void Player::durationChanged(qint64 duration) {
     mDuration = duration / 1000;
     mSlider->setMaximum(mDuration);
@@ -171,12 +197,17 @@ void Player::seek(int seconds) {
     mPlayer->setPosition(seconds * 1000);
 }
 
+QTime Player::getTime(qint64 time) {
+    QTime t((time / 3600) % 60, (time / 60) % 60,
+                  time % 60, (time * 1000) % 1000);
+    return t;
+}
+
 void Player::updateRange(int low, int high) {
     qDebug() << "Slider moved: " << low << ", " << high;
-    QTime lowTime((low / 3600) % 60, (low / 60) % 60,
-                  low % 60, (low * 1000) % 1000);
-    QTime highTime((high / 3600) % 60, (high / 60) % 60,
-                  high % 60, (high * 1000) % 1000);
+    QTime lowTime = getTime(low);
+    QTime highTime = getTime(high);
+
     QString format = "mm:ss";
     if (mDuration > 3600)
         format = "hh:mm:ss";
@@ -278,6 +309,8 @@ void Player::updateDurationInfo(qint64 currentInfo) {
     }
     mLabelDuration->setText(tStr);
 }
+
+
 
 //no showColorDialog
 //no clearHistogram

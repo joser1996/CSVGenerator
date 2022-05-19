@@ -6,6 +6,7 @@
 #include <QtMultimediaWidgets>
 #include <QMediaPlayer>
 #include "RangeSlider.h"
+#include "MyListModel.h"
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -13,6 +14,7 @@ class QMediaPlayer;
 class PushButton;
 class QSlider;
 class QAudioProbe;
+struct TimeSegment;
 QT_END_NAMESPACE
 
 class Player: public QWidget {
@@ -23,6 +25,8 @@ public:
     ~Player();
 
     bool isPlayerAvailable() const;
+public slots:
+    void saveSegment();
 
 signals:
 
@@ -46,6 +50,7 @@ private:
     void setStatusInfo(const QString& info);
     void handleCursor(QMediaPlayer::MediaStatus status);
     void updateDurationInfo(qint64 currentInfo);
+    QTime getTime(qint64 time);
 
     QMediaPlayer* mPlayer = nullptr;
     QLabel* mCoverLabel = nullptr;
@@ -64,7 +69,11 @@ private:
     QAudioOutput* mAudio;
     QAudioDevice mAudioDevice;
 
+    QListView* mListView;
+    MyListModel* mModel;
+
     QList<QUrl> mTracks;
+    QList<QString> mTimeSegments;
 };
 
 #endif // PLAYER_H

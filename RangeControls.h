@@ -20,13 +20,16 @@ signals:
     void play();
     void pause();
     void updateTime();
+    void saveSegment();
 
 private slots:
     void playClicked();
+    void saveClicked();
 
 private:
     QMediaPlayer::PlaybackState mPlayerState = QMediaPlayer::StoppedState;
     QAbstractButton* mPlayButton = nullptr;
+    QAbstractButton* mSaveButton = nullptr;
 };
 
 #endif // RANGECONTROLS_H

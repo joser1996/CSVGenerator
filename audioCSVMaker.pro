@@ -14,7 +14,7 @@ SOURCES += \
     PlayerControls.cpp \
     RangeControls.cpp \
     RangeSlider.cpp \
-    TimeSegment.cpp \
+    TableModel.cpp \
     main.cpp \
     mainwindow.cpp \
     player.cpp
@@ -24,7 +24,7 @@ HEADERS += \
     PlayerControls.h \
     RangeControls.h \
     RangeSlider.h \
-    TimeSegment.h \
+    TableModel.h \
     mainwindow.h \
     player.h
 

@@ -3,6 +3,7 @@
 #include "RangeControls.h"
 #include "RangeSlider.h"
 #include "TimeSegment.h"
+#include "TableModel.h"
 
 #include <QtWidgets>
 #include <QMediaPlayer>
@@ -34,9 +35,9 @@ void Player::setupAudioPlayer() {
 }
 
 void Player::setupViews() {
-    mListView = new QListView(this);
-    mModel = new MyListModel(mTimeSegments, this);
-    mListView->setModel(mModel);
+    mTableView = new QTableView(this);
+    mTableModel = new TableModel(this);
+    mTableView->setModel(mTableModel);
 }
 
 void Player::setupControls() {
@@ -108,7 +109,7 @@ void Player::setupControls() {
     layout->addLayout(hLayout);
     layout->addLayout(breakLayout);
     layout->addLayout(controlsLayout);
-    layout->addWidget(mListView);
+    layout->addWidget(mTableView);
     //didn't include display layout
 
 #if defined(Q_OS_QNX)
@@ -151,19 +152,15 @@ void Player::open() {
 }
 
 void Player::saveSegment() {
-    qint64 lower = mBreakSlider->low();
-    qint64 upper = mBreakSlider->high();
-    QTime lowTime = getTime(lower);
-    QTime upperTime = getTime(upper);
-    QString newSegment = "%1, %2, %3";
+    QTime lowTime = getTime(mBreakSlider->low());
+    QTime upperTime = getTime(mBreakSlider->high());
 
     bool ok = false;
     QString title = QInputDialog::getText(this, tr("Enter Song title: "), tr("Title: "),
                                           QLineEdit::Normal, "", &ok);
     if (!ok || title.isEmpty()) return;
 
-    newSegment = newSegment.arg(title, lowTime.toString(), upperTime.toString());
-    mModel->insertRow(newSegment);
+    mTableModel->insertSegment(title, lowTime.toString(), upperTime.toString());
 }
 
 void Player::durationChanged(qint64 duration) {

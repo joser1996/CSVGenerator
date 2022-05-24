@@ -7,6 +7,7 @@
 #include <QMediaPlayer>
 #include "RangeSlider.h"
 #include "MyListModel.h"
+#include "TableModel.h"
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -72,8 +73,8 @@ private:
     QAudioOutput* mAudio;
     QAudioDevice mAudioDevice;
 
-    QListView* mListView;
-    MyListModel* mModel;
+    QTableView* mTableView;
+    TableModel* mTableModel;
 
     QList<QUrl> mTracks;
     QList<QString> mTimeSegments;

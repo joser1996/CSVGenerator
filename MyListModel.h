@@ -21,8 +21,12 @@ public:
     bool insertRows(int pos, int rows, const QModelIndex& index = QModelIndex());
     bool removeRows(int pos, int rows, const QModelIndex& index = QModelIndex());
     bool insertRow( QString val, const QModelIndex& index = QModelIndex());
+
+
 private:
     QList<QString> mStrings;
+
+
 };
 
 

@@ -1,0 +1,63 @@
+#include "TableModel.h"
+
+int TableModel::rowCount(const QModelIndex &parent) const
+{
+    if (!parent.isValid()) {
+        return mTrackTitles.count();
+    }
+    return 0;
+}
+
+int TableModel::columnCount(const QModelIndex &parent) const
+{
+    if (!parent.isValid()) {
+        return 3;
+    }
+    return 0;
+}
+
+QVariant TableModel::data(const QModelIndex &index, int role) const
+{
+    if (!index.isValid()) return QVariant();
+
+    if (role == Qt::DisplayRole) {
+        if (index.column() == TRACK_COL) {
+            return mTrackTitles[index.row()];
+        } else if (index.column() == START_COL) {
+            return mStartTimes[index.row()];
+        } else {
+            return mStopTimes[index.row()];
+        }
+    }
+
+    return QVariant();
+}
+
+QVariant TableModel::headerData(int section, Qt::Orientation ori, int role) const
+{
+    if (role != Qt::DisplayRole) return QVariant();
+    if (ori == Qt::Horizontal) {
+        if (section == TRACK_COL) {
+            return "Track Title";
+        } else if (role == START_COL) {
+            return "Start Time";
+        } else {
+            return "Stop Time";
+        }
+    } else if (ori == Qt::Vertical) {
+        return tr("%1").arg(section);
+    }
+    return QVariant();
+}
+
+
+void TableModel::insertSegment(QString title, QString startTime, QString stopTime)
+{
+    const int lastRow = mTrackTitles.count();
+    beginInsertRows(QModelIndex(), lastRow, lastRow);
+    mTrackTitles.append(title);
+    mStartTimes.append(startTime);
+    mStopTimes.append(stopTime);
+    endInsertRows();
+}
+

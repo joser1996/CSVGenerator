@@ -108,7 +108,15 @@ void Player::setupControls() {
     layout->addLayout(hLayout);
     layout->addLayout(breakLayout);
     layout->addLayout(controlsLayout);
-    layout->addWidget(mTableView);
+
+    QHBoxLayout* tableLayout = new QHBoxLayout;
+    mRowButtons = new RowButtons(this);
+    connect(mRowButtons, &RowButtons::play, mPlayer, &QMediaPlayer::play);
+    connect(mRowButtons, &RowButtons::pause, mPlayer, &QMediaPlayer::pause);
+
+    tableLayout->addWidget(mTableView);
+    tableLayout->addWidget(mRowButtons);
+    layout->addLayout(tableLayout);
     //didn't include display layout
 
 #if defined(Q_OS_QNX)

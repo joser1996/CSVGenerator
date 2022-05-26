@@ -14,6 +14,7 @@ SOURCES += \
     PlayerControls.cpp \
     RangeControls.cpp \
     RangeSlider.cpp \
+    RowButtons.cpp \
     TableModel.cpp \
     main.cpp \
     mainwindow.cpp \
@@ -24,6 +25,7 @@ HEADERS += \
     PlayerControls.h \
     RangeControls.h \
     RangeSlider.h \
+    RowButtons.h \
     TableModel.h \
     mainwindow.h \
     player.h

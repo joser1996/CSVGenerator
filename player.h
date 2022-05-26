@@ -8,6 +8,7 @@
 #include "RangeSlider.h"
 #include "MyListModel.h"
 #include "TableModel.h"
+#include "RowButtons.h"
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -64,7 +65,7 @@ private:
     QLabel* mLabelDuration = nullptr;
     QLabel* mStatusLabel = nullptr;
     QStatusBar* mStatusBar = nullptr;
-
+    RowButtons* mRowButtons = nullptr;
 
     QAudioProbe* mAudioProbe = nullptr;
     QString mTrackInfo;

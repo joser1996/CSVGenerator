@@ -2,7 +2,6 @@
 #include "PlayerControls.h"
 #include "RangeControls.h"
 #include "RangeSlider.h"
-#include "TimeSegment.h"
 #include "TableModel.h"
 
 #include <QtWidgets>

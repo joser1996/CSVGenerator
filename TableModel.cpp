@@ -1,4 +1,5 @@
 #include "TableModel.h"
+#include <QTime>
 
 int TableModel::rowCount(const QModelIndex &parent) const
 {
@@ -51,13 +52,31 @@ QVariant TableModel::headerData(int section, Qt::Orientation ori, int role) cons
 }
 
 
-void TableModel::insertSegment(QString title, QString startTime, QString stopTime)
+void TableModel::insertSegment(QString title, QTime startTime, QTime stopTime)
 {
+
+    qDebug() << tr("[%1, %2]").arg(startTime.toString(), stopTime.toString());
+    for (auto stopStr: mStopTimes) {
+        QTime currentTime = QTime::fromString(stopStr, "HH:mm:ss");
+        if (startTime < currentTime) {
+            qDebug() << "Overlap!";
+            return;
+        }
+    }
+
     const int lastRow = mTrackTitles.count();
     beginInsertRows(QModelIndex(), lastRow, lastRow);
     mTrackTitles.append(title);
-    mStartTimes.append(startTime);
-    mStopTimes.append(stopTime);
+    mStartTimes.append(startTime.toString());
+    mStopTimes.append(stopTime.toString());
     endInsertRows();
 }
+
+
+
+
+
+
+
+
 

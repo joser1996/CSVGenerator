@@ -158,8 +158,7 @@ void Player::saveSegment() {
     QString title = QInputDialog::getText(this, tr("Enter Song title: "), tr("Title: "),
                                           QLineEdit::Normal, "", &ok);
     if (!ok || title.isEmpty()) return;
-
-    mTableModel->insertSegment(title, lowTime.toString(), upperTime.toString());
+    mTableModel->insertSegment(title, lowTime, upperTime);
 }
 
 void Player::durationChanged(qint64 duration) {

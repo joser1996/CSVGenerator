@@ -40,7 +40,7 @@ QVariant TableModel::headerData(int section, Qt::Orientation ori, int role) cons
     if (ori == Qt::Horizontal) {
         if (section == TRACK_COL) {
             return "Track Title";
-        } else if (role == START_COL) {
+        } else if (section == START_COL) {
             return "Start Time";
         } else {
             return "Stop Time";
@@ -72,7 +72,29 @@ void TableModel::insertSegment(QString title, QTime startTime, QTime stopTime)
     endInsertRows();
 }
 
+bool TableModel::removeRow(int row, const QModelIndex& parent) {
+    if (!parent.isValid()) {
+        beginRemoveRows(parent, row, row);
+        mTrackTitles.removeAt(row);
+        mStartTimes.removeAt(row);
+        mStopTimes.removeAt(row);
+        endRemoveRows();
+        return true;
+    }
+    return false;
+}
 
+QString TableModel::getData(int row, int col) const {
+    switch (col) {
+    case TRACK_COL:
+        return mTrackTitles[row];
+    case START_COL:
+        return mStartTimes[row];
+    case STOP_COL:
+        return mStopTimes[row];
+    }
+    return "";
+}
 
 
 

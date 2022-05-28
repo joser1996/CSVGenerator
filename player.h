@@ -55,6 +55,8 @@ private:
     void setupAudioPlayer();
     void setupViews();
     void setupControls();
+    bool eventFilter(QObject* watched, QEvent* event);
+
 
     QMediaPlayer* mPlayer = nullptr;
     QLabel* mCoverLabel = nullptr;

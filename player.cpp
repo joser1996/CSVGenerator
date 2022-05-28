@@ -34,7 +34,10 @@ void Player::setupAudioPlayer() {
 }
 
 void Player::setupViews() {
+    //want tableview when focuesd to listen for key input
     mTableView = new QTableView(this);
+    mTableView->setSelectionBehavior(QAbstractItemView::SelectItems);
+    mTableView->installEventFilter(this);
     mTableModel = new TableModel(this);
     mTableView->setModel(mTableModel);
 }
@@ -128,6 +131,33 @@ void Player::setupControls() {
         openButton->setEnabled(false);
     }
 
+}
+
+bool Player::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == mTableView && event->type() == QEvent::KeyPress) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->key() == Qt::Key_Space) {
+            QModelIndex selection = mTableView->selectionModel()->currentIndex();
+            if (selection.isValid() && selection.column() == START_COL) {
+                QString startTime = mTableModel->getData(selection.row(), selection.column());
+                QTime time = QTime::fromString(startTime, "HH:mm:ss");
+                int seconds = time.second();
+                seconds += time.minute() * 60;
+                seconds += time.hour() * 60 * 60;
+                //convert to time and then emit signal to seek slot
+                seek(seconds);
+                qDebug() << "Update start time to: " << startTime << "or: " << seconds << " seconds";
+            }
+        } else if (keyEvent->key() == Qt::Key_Delete) {
+            qDebug() << "Do delete stuff";
+            QModelIndex index = mTableView->selectionModel()->currentIndex();
+            if (index.isValid()) {
+                mTableModel->removeRow(index.row());
+            }
+        }
+    }
+    return QWidget::eventFilter(watched, event);
 }
 
 bool Player::isPlayerAvailable() const {
@@ -305,10 +335,6 @@ void Player::updateDurationInfo(qint64 currentInfo) {
     mLabelDuration->setText(tStr);
 }
 
-
-
-//no showColorDialog
-//no clearHistogram
 
 
 

@@ -15,6 +15,8 @@ public:
     QVariant headerData(int section, Qt::Orientation ori,
                         int role = Qt::DisplayRole) const;
     void insertSegment(QString title, QTime startTime, QTime stopTime);
+    QString getData(int row, int col) const;
+    bool removeRow(int row, const QModelIndex& parent = QModelIndex());
 private:
     QStringList mTrackTitles;
     QStringList mStartTimes;

@@ -59,8 +59,11 @@ void Player::setupControls() {
     connect(mSlider, &QSlider::sliderMoved, this, &Player::seek);
     mBreakLabel = new QLabel(this);
 
+    //Put open and save button in same widget
     QPushButton* openButton = new QPushButton(tr("Open"), this);
     connect(openButton, &QPushButton::clicked, this, &Player::open);
+    QPushButton* saveButton = new QPushButton(tr("Save"), this);
+    connect(saveButton, &QPushButton::clicked, this, &Player::save);
 
     PlayerControls* controls = new PlayerControls(this);
     controls->setState(mPlayer->playbackState());
@@ -91,9 +94,9 @@ void Player::setupControls() {
     QBoxLayout* controlsLayout = new QHBoxLayout;
     controlsLayout->setContentsMargins(0, 0, 0, 0);
     controlsLayout->addWidget(openButton);
-    controlsLayout->addStretch(1);
-    //controlsLayout->addWidget(controls);
     //controlsLayout->addStretch(1);
+    controlsLayout->addWidget(saveButton);
+    controlsLayout->addStretch(1);
 
     QHBoxLayout* hLayout = new QHBoxLayout;
     hLayout->addWidget(controls, 1);
@@ -103,16 +106,13 @@ void Player::setupControls() {
     QHBoxLayout* breakLayout = new QHBoxLayout;
     breakLayout->setContentsMargins(0, 0, 0, 0);
     breakLayout->addWidget(rangeControls);
-    //breakLayout->addStretch(1);
     breakLayout->addWidget(mBreakSlider);
-    //breakLayout->addStretch(1);
     breakLayout->addWidget(mBreakLabel);
 
     layout->addLayout(hLayout);
     layout->addLayout(breakLayout);
     layout->addLayout(controlsLayout);
     layout->addWidget(mTableView);
-    //didn't include display layout
 
 #if defined(Q_OS_QNX)
     mStatusLabel = new QLabel;
@@ -176,6 +176,39 @@ void Player::open() {
             qDebug() << "Track Selected: " << localTrack;
             mPlayer->setSource(localTrack);
             mAudio->setVolume(50);
+        }
+    }
+}
+
+void Player::save()
+{
+    qDebug() << "Attempting to save";
+    QMessageBox msgBox;
+    msgBox.setText("Are you sure you want to save?");
+    msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
+    msgBox.setDefaultButton(QMessageBox::Cancel);
+    int ret = msgBox.exec();
+
+    if (ret == QMessageBox::Save) {
+        //use table model to build csf file
+        QString fileName = "Test.csv";
+        QFile file(fileName);
+        if (file.open(QIODevice::ReadWrite)) {
+            qDebug() << "Here";
+            QTextStream stream(&file);
+            QString header = "Title, Start, Stop";
+            stream << header << Qt::endl;
+            for (int row = 0; row < mTableModel->rowCount(QModelIndex()); row++) {
+                QString rowData = "";
+                for (int col = 0; col < mTableModel->columnCount(QModelIndex()); col++) {
+                     rowData += mTableModel->getData(row, col);
+                     if (col != mTableModel->columnCount(QModelIndex()) - 1) {
+                         rowData += ", ";
+                     }
+                }
+                stream << rowData << Qt::endl;
+            }
+            file.close();
         }
     }
 }

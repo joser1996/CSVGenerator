@@ -6,6 +6,8 @@
 
 //TODO: Take Ranges that have been saved and generate CSV file with all segments
 //and ask user where to save
+// Create save button
+// create CSV file form model data
 //TODO: Release also for LINUX
 //VERSION ONE DONE
 int main(int argc, char *argv[])

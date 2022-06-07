@@ -33,6 +33,7 @@ signals:
 
 private slots:
     void open();
+    void save();
     void durationChanged(qint64 duration);
     void positionChanged(qint64 progress);
     void metaDataChanged();
